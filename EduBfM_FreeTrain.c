@@ -32,11 +32,8 @@
  *  Four EduBfM_FreeTrain(TrainID *, Four)
  */
 
-
 #include "EduBfM_common.h"
 #include "EduBfM_Internal.h"
-
-
 
 /*@================================
  * EduBfM_FreeTrain()
@@ -56,31 +53,31 @@
  *    eBADBUFFERTYPE_BFM - bad buffer type
  *    some errors caused by fuction calls
  */
-Four EduBfM_FreeTrain( 
-    TrainID             *trainId,       /* IN train to be freed */
-    Four                type)           /* IN buffer type */
+Four EduBfM_FreeTrain(
+    TrainID *trainId, /* IN train to be freed */
+    Four type)        /* IN buffer type */
 {
-    Four                index;          /* index on buffer holding the train */
-    Four 		e;		/* error code */
+    Four index; /* index on buffer holding the train */
+    Four e;     /* error code */
 
     /*@ check if the parameter is valid. */
-    if (IS_BAD_BUFFERTYPE(type)) ERR(eBADBUFFERTYPE_BFM);	
+    if (IS_BAD_BUFFERTYPE(type))
+        ERR(eBADBUFFERTYPE_BFM);
 
     index = edubfm_LookUp(trainId, type);
-    if(index == NOTFOUND_IN_HTABLE){
+    if (index == NOTFOUND_IN_HTABLE)
         ERR(eNOTFOUND_BFM);
-    }
-    else{
-        BI_FIXED(type, index) -= 1;
-        
-        if(BI_FIXED(type, index) < 0){
+    else
+    {
+        BI_FIXED(type, index) = BI_FIXED(type, index) - 1;
+        if (BI_FIXED(type, index) < 0)
+        {
             printf("fixed counter is less than 0!!!\n");
-            printf("trainId = {%d,  %d}\n", trainId->volNo, trainId->pageNo);
+            printf("trainId = {%d, %d}\n", trainId->volNo, trainId->pageNo);
             BI_FIXED(type, index) = 0;
         }
-        
     }
-    
-    return( eNOERROR );
-    
+
+    return (eNOERROR);
+
 } /* EduBfM_FreeTrain() */

@@ -74,11 +74,9 @@ Four edubfm_ReadTrain(
 
 	/* Error check whether using not supported functionality by EduBfM */
 	if (RM_IS_ROLLBACK_REQUIRED()) ERR(eNOTSUPPORTED_EDUBFM);
-    //RDsM_READTRAIN
-    e=RDsM_ReadTrain(trainId, aTrain, BI_BUFSIZE(type));
-    //error check
-    if(e<0)
-        ERR(e); 
+
+    e = RDsM_ReadTrain(trainId, aTrain, BI_BUFSIZE(type));
+    if(e < 0) ERR(e);
 
     return( eNOERROR );
 

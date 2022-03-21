@@ -32,11 +32,8 @@
  *  Four EduBfM_DiscardAll(void)
  */
 
-
 #include "EduBfM_common.h"
 #include "EduBfM_Internal.h"
-
-
 
 /*@================================
  * EduBfM_DiscardAll()
@@ -55,19 +52,26 @@
  */
 Four EduBfM_DiscardAll(void)
 {
-    Four 	e;			/* error */
-    Two 	i;			/* index */
-    Four 	type;			/* buffer type */
+    Four e;    /* error */
+    Two i;     /* index */
+    Four type; /* buffer type */
 
-    for(type = 0; type < NUM_BUF_TYPES; type++){
-        for(i = 0; i < BI_NBUFS(type); i++){
-            BI_KEY(type, i).pageNo = NIL;
+    type = 0;
+    while (type < NUM_BUF_TYPES)
+    {
+        i = 0;
+        while (i < BI_NBUFS(type))
+        {
             BI_BITS(type, i) = 0;
+            BI_KEY(type, i).pageNo = NIL;
+            i++;
         }
+        type++;
     }
     e = edubfm_DeleteAll();
-    if(e < 0) ERR(e);
+    if (e < 0)
+        ERR(e);
 
-    return(eNOERROR);
+    return (eNOERROR);
 
-}  /* EduBfM_DiscardAll() */
+} /* EduBfM_DiscardAll() */

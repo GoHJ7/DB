@@ -25,18 +25,15 @@
 /*
  * Module: EduBfM_GetTrain.c
  *
- * Description : 
+ * Description :
  *  Return a buffer which has the disk content indicated by `trainId'.
  *
  * Exports:
  *  Four EduBfM_GetTrain(TrainID *, char **, Four)
  */
 
-
 #include "EduBfM_common.h"
 #include "EduBfM_Internal.h"
-
-
 
 /*@================================
  * EduBfM_GetTrain()
@@ -44,7 +41,7 @@
 /*
  * Function: EduBfM_GetTrain(TrainID*, char**, Four)
  *
- * Description : 
+ * Description :
  * (Following description is for original ODYSSEUS/COSMOS BfM.
  *  For ODYSSEUS/EduCOSMOS EduBfM, refer to the EduBfM project manual.)
  *
@@ -54,7 +51,7 @@
  *  then simply return it and set the reference bit of the correponding
  *  buffer table entry.   Otherwise, i.e. the train does not exist in the
  *  pool, allocate a buffer (a buffer selected as victim may be forced out
- *  by the buffer replacement algorithm), read a disk train into the 
+ *  by the buffer replacement algorithm), read a disk train into the
  *  selected buffer train, and return it.
  *
  * Returns:
@@ -68,28 +65,37 @@
  *     pointer to buffer holding the disk train indicated by `trainId'
  */
 Four EduBfM_GetTrain(
-    TrainID             *trainId,               /* IN train to be used */
-    char                **retBuf,               /* OUT pointer to the returned buffer */
-    Four                type )                  /* IN buffer type */
+    TrainID *trainId, /* IN train to be used */
+    char **retBuf,    /* OUT pointer to the returned buffer */
+    Four type)        /* IN buffer type */
 {
-    Four                e;                      /* for error */
-    Four                index;                  /* index of the buffer pool */
-
+    Four e;     /* for error */
+    Four index; /* index of the buffer pool */
 
     /*@ Check the validity of given parameters */
     /* Some restrictions may be added         */
-    if(retBuf == NULL) ERR(eBADBUFFER_BFM);
+    if (retBuf == NULL)
+        ERR(eBADBUFFER_BFM);
 
     /* Is the buffer type valid? */
-    if(IS_BAD_BUFFERTYPE(type)) ERR(eBADBUFFERTYPE_BFM);	
+    if (IS_BAD_BUFFERTYPE(type))
+        ERR(eBADBUFFERTYPE_BFM);
 
     index = edubfm_LookUp(trainId, type);
-    if(index == NOTFOUND_IN_HTABLE){ 
+    if (index != NOTFOUND_IN_HTABLE)
+    { // train o
+        BI_FIXED(type, index) += 1;
+        BI_BITS(type, index) |= REFER;
+    }
+    else
+    { // train x
         index = edubfm_AllocTrain(type);
-        if(index < 0) ERR(index);
+        if (index < 0)
+            ERR(index);
 
         e = edubfm_ReadTrain(trainId, BI_BUFFER(type, index), type);
-        if(e < 0) ERR(e);
+        if (e < 0)
+            ERR(e);
 
         BI_KEY(type, index).pageNo = trainId->pageNo;
         BI_KEY(type, index).volNo = trainId->volNo;
@@ -97,15 +103,12 @@ Four EduBfM_GetTrain(
         BI_BITS(type, index) |= REFER;
 
         e = edubfm_Insert(&BI_KEY(type, index), index, type);
-        if(e < 0) ERR(e);
+        if (e < 0)
+            ERR(e);
+    }
 
-    }
-    else{  
-        BI_FIXED(type, index) += 1;
-        BI_BITS(type, index) |= REFER;
-    }
     *retBuf = BI_BUFFER(type, index);
 
-    return(eNOERROR);   /* No error */
+    return (eNOERROR); /* No error */
 
-}  /* EduBfM_GetTrain() */
+} /* EduBfM_GetTrain() */
