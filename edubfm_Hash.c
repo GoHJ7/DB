@@ -91,6 +91,9 @@ Four edubfm_Insert(
     if( (index < 0) || (index > BI_NBUFS(type)) )
         ERR( eBADBUFINDEX_BFM );
 
+    hashValue = BFM_HASH(key, type);
+    BI_NEXTHASHENTRY(type, index) = BI_HASHTABLEENTRY(type, hashValue);
+    BI_HASHTABLEENTRY(type, hashValue) = index;
    
 
     return( eNOERROR );
@@ -125,8 +128,24 @@ Four edubfm_Delete(
 
 
     CHECKKEY(key);    /*@ check validity of key */
+    
+    hashValue = BFM_HASH(key, type);
+    prev = NIL;
+    i = BI_HASHTABLEENTRY(type, hashValue);
 
+    while(1) {
+        if(i == NIL)
+            ERR( eNOTFOUND_BFM );
+        if(EQUALKEY(&BI_KEY(type, i), key))
+            break;
+        prev = i;
+        i = BI_NEXTHASHENTRY(type, i);
+    }
 
+    if(prev == NIL) 
+        BI_HASHTABLEENTRY(type, hashValue) = BI_NEXTHASHENTRY(type, i);
+    else 
+        BI_NEXTHASHENTRY(type, prev) = BI_NEXTHASHENTRY(type, i);
 
     ERR( eNOTFOUND_BFM );
 
@@ -160,7 +179,19 @@ Four edubfm_LookUp(
 
 
     CHECKKEY(key);    /*@ check validity of key */
+    
+    hashValue = BFM_HASH(key, type);
+    i = BI_HASHTABLEENTRY(type, hashValue);
 
+    while(1){
+        if(i == NIL)
+            return(NOTFOUND_IN_HTABLE);
+
+        if(EQUALKEY(&BI_KEY(type, i), key))
+            break;
+        
+        i = BI_NEXTHASHENTRY(type, i);
+    }
 
 
     return(NOTFOUND_IN_HTABLE);
@@ -188,8 +219,13 @@ Four edubfm_DeleteAll(void)
 {
     Two 	i;
     Four        tableSize;
-    
+    Two type;
 
+    for(type = 0; type < NUM_BUF_TYPES; type++){
+        for(i = 0; i < HASHTABLESIZE(type); i++){
+            BI_HASHTABLEENTRY(type, i) = NIL;
+        }
+    }
 
     return(eNOERROR);
 
